@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # This nginx will show as "up to date" since it's using latest
+  nginx-latest:
+    image: nginx:latest
+    container_name: demo-nginx-latest
+    
+  # This nginx uses an older version tag, so when checking nginx:1.24
+  # it will compare against itself and show "up to date"
+  # But we can see the UI styling for updates
+  nginx-old:
+    image: nginx:1.24
+    container_name: demo-nginx-old
+    labels:
+      - "demo=true"
+      
+  # Redis with an old version
+  redis-old:
+    image: redis:7.0
+    container_name: demo-redis-old
+    labels:
+      - "demo=true"

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BleedingEdge - Update UI Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-running {
+            background-color: #10b981;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        }
+        .status-update {
+            background-color: #f97316;
+            animation: pulse-orange 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse-orange {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-7xl mx-auto">
+        <h1 class="text-3xl font-bold mb-8">BleedingEdge Update UI Demo</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Container WITH Update Available -->
+            <div class="block group">
+                <div class="bg-white rounded-lg shadow-sm border-2 transition-all duration-200 hover:shadow-md hover:border-blue-300 border-orange-400">
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-semibold text-gray-900 truncate group-hover:text-blue-600">
+                                    nginx-old-version
+                                </h3>
+                                <div class="mt-1 flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        Standalone
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="flex items-center text-sm text-green-700">
+                                    <span class="status-indicator status-running mr-2"></span>
+                                    Running
+                                </span>
+                            </div>
+                            
+                            <!-- UPDATE AVAILABLE -->
+                            <div class="flex items-center">
+                                <span class="flex items-center text-sm text-orange-600 font-medium">
+                                    <span class="status-indicator status-update mr-2"></span>
+                                    Update Available
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 pb-4">
+                        <div class="text-sm text-blue-600 group-hover:text-blue-700 font-medium flex items-center">
+                            View Details
+                            <svg class="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Container WITHOUT Update (Up to date) -->
+            <div class="block group">
+                <div class="bg-white rounded-lg shadow-sm border-2 transition-all duration-200 hover:shadow-md hover:border-blue-300 border-green-200">
+                    <div class="p-4 border-b border-gray-100">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1 min-w-0">
+                                <h3 class="text-lg font-semibold text-gray-900 truncate group-hover:text-blue-600">
+                                    nginx-latest
+                                </h3>
+                                <div class="mt-1 flex items-center space-x-2">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        Standalone
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="flex items-center text-sm text-green-700">
+                                    <span class="status-indicator status-running mr-2"></span>
+                                    Running
+                                </span>
+                            </div>
+                            
+                            <!-- UP TO DATE -->
+                            <div class="flex items-center">
+                                <span class="flex items-center text-sm text-gray-500">
+                                    <svg class="h-4 w-4 mr-2 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                    </svg>
+                                    Up to date
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-4 pb-4">
+                        <div class="text-sm text-blue-600 group-hover:text-blue-700 font-medium flex items-center">
+                            View Details
+                            <svg class="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold mb-4">Detail Page with Update Button</h2>
+            <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center space-x-3">
+                            <h1 class="text-2xl font-bold text-gray-900">nginx-old-version</h1>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                Standalone Container
+                            </span>
+                        </div>
+                        
+                        <div class="mt-3 flex items-center space-x-4">
+                            <span class="flex items-center text-sm text-green-700">
+                                <span class="status-indicator status-running mr-2"></span>
+                                Running
+                            </span>
+                            
+                            <span class="flex items-center text-sm text-orange-600 font-medium">
+                                <span class="status-indicator status-update mr-2"></span>
+                                Updates Available
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- UPDATE BUTTON -->
+                    <button class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+                        Update Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 class="font-semibold text-blue-900 mb-2">Visual Indicators:</h3>
+            <ul class="list-disc list-inside text-blue-800 space-y-1">
+                <li><strong>Orange border</strong> on card = Update available</li>
+                <li><strong>Green border</strong> on card = Up to date</li>
+                <li><strong>Pulsing orange dot</strong> = Update available indicator</li>
+                <li><strong>Orange "Update Now" button</strong> appears on detail page when updates are available</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
