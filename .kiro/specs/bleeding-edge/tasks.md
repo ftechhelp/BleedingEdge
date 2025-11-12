@@ -6,13 +6,13 @@
   - Create basic main.go with application entry point and Docker connectivity check
   - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 2. Implement Docker client wrapper and data models
-  - [ ] 2.1 Create DockerClient interface in internal/docker/client.go
+- [x] 2. Implement Docker client wrapper and data models
+  - [x] 2.1 Create DockerClient interface in internal/docker/client.go
     - Define all methods: ListContainers, InspectContainer, PullImage, GetImageDigest, lifecycle operations, CreateContainer, ExecuteCommand
     - Implement concrete client wrapping Docker SDK with context support and error handling
     - _Requirements: 9.2_
   
-  - [ ] 2.2 Create data models in internal/models/container.go
+  - [x] 2.2 Create data models in internal/models/container.go
     - Implement ContainerGroup, ContainerInfo, ContainerParams, OperationResult structs
     - Define GroupType constants (compose/standalone)
     - _Requirements: 1.2, 1.3_

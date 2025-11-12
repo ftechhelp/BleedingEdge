@@ -4,13 +4,13 @@ go 1.25
 
 require (
 	github.com/docker/docker v20.10.27+incompatible
+	github.com/docker/go-connections v0.5.0
 	github.com/gorilla/mux v1.8.1
 )
 
 require (
 	github.com/Microsoft/go-winio v0.4.14 // indirect
 	github.com/docker/distribution v0.0.0-00010101000000-000000000000 // indirect
-	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.1 // indirect
