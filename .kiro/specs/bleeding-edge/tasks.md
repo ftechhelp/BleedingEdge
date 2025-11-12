@@ -138,27 +138,27 @@
     - Load and validate environment variables on startup
     - _Requirements: 9.5_
 
-- [ ] 9. Write unit tests for core functionality
-  - [ ] 9.1 Create mock Docker client for testing
+- [x] 9. Write unit tests for core functionality
+  - [x] 9.1 Create mock Docker client for testing
     - Implement mock DockerClient interface
     - Provide test data for various scenarios
     - _Requirements: 8.1_
   
-  - [ ] 9.2 Write container service tests in internal/services/container_test.go
+  - [x] 9.2 Write container service tests in internal/services/container_test.go
     - Test container grouping with various label combinations
     - Test compose project detection
     - Test update status detection with different digest scenarios
     - Test error handling
     - _Requirements: 8.1, 8.4_
   
-  - [ ] 9.3 Write update service tests in internal/services/update_test.go
+  - [x] 9.3 Write update service tests in internal/services/update_test.go
     - Test parameter extraction with various container configurations
     - Test standalone container update flow
     - Test compose project update flow
     - Test error handling for all failure scenarios
     - _Requirements: 8.1, 8.3_
   
-  - [ ] 9.4 Write handler tests in internal/handlers/handlers_test.go
+  - [x] 9.4 Write handler tests in internal/handlers/handlers_test.go
     - Test HTTP responses for all endpoints
     - Test template rendering with various data
     - Test error response formatting
