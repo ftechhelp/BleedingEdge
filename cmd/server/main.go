@@ -18,9 +18,24 @@ func main() {
 	// Get configuration from environment
 	port := getEnv("PORT", "8080")
 	logLevel := getEnv("LOG_LEVEL", "info")
+	dockerHost := getEnv("DOCKER_HOST", "unix:///var/run/docker.sock")
+	updateCheckTimeout := getEnv("UPDATE_CHECK_TIMEOUT", "5m")
 
 	// Initialize structured logger
 	logger := initLogger(logLevel)
+
+	// Validate environment variables
+	if err := validateConfig(port, logLevel, dockerHost, updateCheckTimeout); err != nil {
+		logger.Error("invalid configuration", "error", err)
+		os.Exit(1)
+	}
+
+	logger.Info("configuration loaded",
+		"port", port,
+		"log_level", logLevel,
+		"docker_host", dockerHost,
+		"update_check_timeout", updateCheckTimeout,
+	)
 
 	// Initialize Docker client wrapper with logger
 	dockerClient, err := docker.NewClientWithLogger(logger)
@@ -184,4 +199,35 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+// validateConfig validates the configuration values
+func validateConfig(port, logLevel, dockerHost, updateCheckTimeout string) error {
+	// Validate port
+	if port == "" {
+		return fmt.Errorf("PORT cannot be empty")
+	}
+
+	// Validate log level
+	validLogLevels := map[string]bool{
+		"debug": true,
+		"info":  true,
+		"warn":  true,
+		"error": true,
+	}
+	if !validLogLevels[logLevel] {
+		return fmt.Errorf("invalid LOG_LEVEL: %s (must be debug, info, warn, or error)", logLevel)
+	}
+
+	// Validate docker host
+	if dockerHost == "" {
+		return fmt.Errorf("DOCKER_HOST cannot be empty")
+	}
+
+	// Validate update check timeout
+	if _, err := time.ParseDuration(updateCheckTimeout); err != nil {
+		return fmt.Errorf("invalid UPDATE_CHECK_TIMEOUT: %s (must be a valid duration like 5m, 10s, etc.)", updateCheckTimeout)
+	}
+
+	return nil
 }

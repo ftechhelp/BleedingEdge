@@ -119,21 +119,21 @@
     - Ensure errors display in UI within 2 seconds
     - _Requirements: 7.1, 7.2, 7.3_
 
-- [ ] 8. Create Dockerfile and deployment configuration
-  - [ ] 8.1 Create multi-stage Dockerfile
+- [x] 8. Create Dockerfile and deployment configuration
+  - [x] 8.1 Create multi-stage Dockerfile
     - Build stage with Go 1.21+ to compile binary
     - Runtime stage with Alpine, docker-cli, and docker-cli-compose
     - Copy binary and web assets to runtime image
     - Expose port 8080
     - _Requirements: 9.1, 9.5_
   
-  - [ ] 8.2 Create docker-compose.yml for deployment
+  - [x] 8.2 Create docker-compose.yml for deployment
     - Mount Docker socket at /var/run/docker.sock
     - Configure port mapping and environment variables
     - Set restart policy
     - _Requirements: 9.2, 9.5_
   
-  - [ ] 8.3 Add environment variable configuration
+  - [x] 8.3 Add environment variable configuration
     - Support PORT, LOG_LEVEL, DOCKER_HOST, UPDATE_CHECK_TIMEOUT
     - Load and validate environment variables on startup
     - _Requirements: 9.5_

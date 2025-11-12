@@ -1,6 +1,6 @@
 module github.com/bleeding-edge/bleeding-edge
 
-go 1.25
+go 1.23
 
 require (
 	github.com/docker/docker v20.10.27+incompatible
