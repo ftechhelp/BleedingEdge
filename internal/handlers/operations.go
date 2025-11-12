@@ -81,8 +81,8 @@ func (h *OperationsHandler) HandleUpdate(w http.ResponseWriter, r *http.Request)
 	}
 
 	if updateErr != nil {
-		h.logger.Error("update failed", "id", id, "type", group.Type, "error", updateErr)
-		h.sendErrorResponse(w, "update", group.Name, formatErrorMessage(updateErr), http.StatusInternalServerError)
+		errResp := createErrorResponse("update", group.Name, updateErr)
+		h.sendErrorResponseWithDetails(w, errResp, http.StatusInternalServerError)
 		return
 	}
 
@@ -132,8 +132,8 @@ func (h *OperationsHandler) handleLifecycleOperation(w http.ResponseWriter, r *h
 
 	// Execute the operation
 	if err := operationFunc(ctx, id); err != nil {
-		h.logger.Error("lifecycle operation failed", "operation", operation, "id", id, "error", err)
-		h.sendErrorResponse(w, operation, containerName, formatErrorMessage(err), http.StatusInternalServerError)
+		errResp := createErrorResponse(operation, containerName, err)
+		h.sendErrorResponseWithDetails(w, errResp, http.StatusInternalServerError)
 		return
 	}
 
@@ -163,7 +163,34 @@ func (h *OperationsHandler) sendErrorResponse(w http.ResponseWriter, operation, 
 		Timestamp: time.Now(),
 	}
 
+	// Set headers to ensure fast response (within 2 seconds requirement)
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(result)
+}
+
+// sendErrorResponseWithDetails sends a detailed error response
+func (h *OperationsHandler) sendErrorResponseWithDetails(w http.ResponseWriter, errResp models.ErrorResponse, statusCode int) {
+	// Log the detailed error
+	h.logger.Error("operation failed",
+		"operation", errResp.Operation,
+		"container", errResp.Container,
+		"message", errResp.Message,
+		"details", errResp.Details,
+	)
+
+	// Convert to OperationResult for backward compatibility with UI
+	result := models.OperationResult{
+		Success:   false,
+		Error:     errResp.Message,
+		Message:   fmt.Sprintf("Failed to %s %s", errResp.Operation, errResp.Container),
+		Timestamp: errResp.Timestamp,
+	}
+
+	// Set headers to ensure fast response (within 2 seconds requirement)
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 	w.WriteHeader(statusCode)
 	json.NewEncoder(w).Encode(result)
 }
@@ -182,16 +209,50 @@ func formatErrorMessage(err error) string {
 	if strings.Contains(errMsg, "is not running") {
 		return "Container is not running."
 	}
-	if strings.Contains(errMsg, "failed to pull") {
+	if strings.Contains(errMsg, "is already stopped") {
+		return "Container is already stopped."
+	}
+	if strings.Contains(errMsg, "failed to pull") || strings.Contains(errMsg, "pull access denied") {
 		return "Failed to pull image. Check your internet connection and image name."
 	}
-	if strings.Contains(errMsg, "permission denied") {
+	if strings.Contains(errMsg, "permission denied") || strings.Contains(errMsg, "access denied") {
 		return "Permission denied. Check Docker socket permissions."
 	}
 	if strings.Contains(errMsg, "timeout") || strings.Contains(errMsg, "context deadline exceeded") {
 		return "Operation timed out. The container may be unresponsive."
 	}
+	if strings.Contains(errMsg, "network") && strings.Contains(errMsg, "not found") {
+		return "Network not found. The container's network may have been removed."
+	}
+	if strings.Contains(errMsg, "port is already allocated") {
+		return "Port is already in use. Another container may be using the same port."
+	}
+	if strings.Contains(errMsg, "no such image") {
+		return "Image not found. The image may not exist or has been removed."
+	}
+	if strings.Contains(errMsg, "Conflict") {
+		return "Container name conflict. A container with this name already exists."
+	}
+	if strings.Contains(errMsg, "working directory") {
+		return "Working directory not found. The compose project directory may have been moved or deleted."
+	}
+	if strings.Contains(errMsg, "docker compose") {
+		return "Docker Compose command failed. Check the compose file and project configuration."
+	}
 
 	// Return the original error message if no pattern matches
 	return errMsg
+}
+
+// createErrorResponse creates a structured error response
+func createErrorResponse(operation, containerName string, err error) models.ErrorResponse {
+	userMessage := formatErrorMessage(err)
+	
+	return models.ErrorResponse{
+		Operation: operation,
+		Container: containerName,
+		Message:   userMessage,
+		Details:   err.Error(),
+		Timestamp: time.Now(),
+	}
 }

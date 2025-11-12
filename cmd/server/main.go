@@ -22,8 +22,8 @@ func main() {
 	// Initialize structured logger
 	logger := initLogger(logLevel)
 
-	// Initialize Docker client wrapper
-	dockerClient, err := docker.NewClient()
+	// Initialize Docker client wrapper with logger
+	dockerClient, err := docker.NewClientWithLogger(logger)
 	if err != nil {
 		logger.Error("failed to initialize Docker client", "error", err)
 		os.Exit(1)

@@ -37,14 +37,20 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get container groups
 	groups, err := services.GetContainerGroups(ctx, h.client)
 	if err != nil {
-		h.logger.Error("failed to get container groups", "error", err)
-		http.Error(w, "Failed to load containers", http.StatusInternalServerError)
+		h.logger.Error("failed to get container groups",
+			"error", err,
+			"operation", "list_containers",
+		)
+		http.Error(w, "Failed to load containers. Please check Docker daemon connection.", http.StatusInternalServerError)
 		return
 	}
 
 	// Check for updates
 	if err := services.CheckUpdates(ctx, h.client, groups); err != nil {
-		h.logger.Warn("failed to check updates", "error", err)
+		h.logger.Warn("failed to check updates",
+			"error", err,
+			"operation", "check_updates",
+		)
 		// Continue rendering even if update check fails
 	}
 
@@ -56,7 +62,10 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Render template
 	if err := h.template.ExecuteTemplate(w, "grid.html", data); err != nil {
-		h.logger.Error("failed to render template", "error", err)
+		h.logger.Error("failed to render template",
+			"error", err,
+			"template", "grid.html",
+		)
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		return
 	}

@@ -47,14 +47,22 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get all container groups to find the requested one
 	groups, err := services.GetContainerGroups(ctx, h.client)
 	if err != nil {
-		h.logger.Error("failed to get container groups", "error", err)
-		http.Error(w, "Failed to load container details", http.StatusInternalServerError)
+		h.logger.Error("failed to get container groups",
+			"error", err,
+			"operation", "list_containers",
+			"container_id", id,
+		)
+		http.Error(w, "Failed to load container details. Please check Docker daemon connection.", http.StatusInternalServerError)
 		return
 	}
 
 	// Check for updates
 	if err := services.CheckUpdates(ctx, h.client, groups); err != nil {
-		h.logger.Warn("failed to check updates", "error", err)
+		h.logger.Warn("failed to check updates",
+			"error", err,
+			"operation", "check_updates",
+			"container_id", id,
+		)
 		// Continue rendering even if update check fails
 	}
 
@@ -68,8 +76,11 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if group == nil {
-		h.logger.Warn("container group not found", "id", id)
-		http.Error(w, "Container not found", http.StatusNotFound)
+		h.logger.Warn("container group not found",
+			"id", id,
+			"operation", "get_container_details",
+		)
+		http.Error(w, "Container not found. It may have been removed.", http.StatusNotFound)
 		return
 	}
 
@@ -81,7 +92,11 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Render template
 	if err := h.template.ExecuteTemplate(w, "detail.html", data); err != nil {
-		h.logger.Error("failed to render template", "error", err)
+		h.logger.Error("failed to render template",
+			"error", err,
+			"template", "detail.html",
+			"container_id", id,
+		)
 		http.Error(w, "Failed to render page", http.StatusInternalServerError)
 		return
 	}

@@ -62,3 +62,12 @@ type OperationResult struct {
 	Error     string    // Error message if failed
 	Timestamp time.Time // When the operation completed
 }
+
+// ErrorResponse represents a structured error response for operations
+type ErrorResponse struct {
+	Operation string    // The operation that failed (e.g., "update", "start", "stop")
+	Container string    // The container or project name
+	Message   string    // User-friendly error message
+	Details   string    // Technical error details
+	Timestamp time.Time // When the error occurred
+}

@@ -3,8 +3,10 @@ package services
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/bleeding-edge/bleeding-edge/internal/docker"
@@ -13,9 +15,17 @@ import (
 
 // GetContainerGroups lists all containers and groups them by compose project
 func GetContainerGroups(ctx context.Context, client docker.DockerClient) ([]models.ContainerGroup, error) {
+	start := time.Now()
+	logger := slog.Default()
+	logger.Debug("getting container groups")
+	
 	// List all containers
 	containers, err := client.ListContainers(ctx)
 	if err != nil {
+		logger.Error("failed to list containers in GetContainerGroups",
+			"error", err,
+			"duration_ms", time.Since(start).Milliseconds(),
+		)
 		return nil, fmt.Errorf("failed to list containers: %w", err)
 	}
 
@@ -72,6 +82,14 @@ func GetContainerGroups(ctx context.Context, client docker.DockerClient) ([]mode
 	}
 	groups = append(groups, standaloneGroups...)
 
+	duration := time.Since(start)
+	logger.Debug("got container groups successfully",
+		"group_count", len(groups),
+		"compose_projects", len(composeProjects),
+		"standalone_containers", len(standaloneGroups),
+		"duration_ms", duration.Milliseconds(),
+	)
+
 	return groups, nil
 }
 
@@ -92,6 +110,20 @@ func IsComposeProject(container types.Container) (bool, string) {
 
 // CheckUpdates pulls latest images and compares digests to mark update status
 func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []models.ContainerGroup) error {
+	start := time.Now()
+	logger := slog.Default()
+	
+	// Count total containers
+	totalContainers := 0
+	for _, group := range groups {
+		totalContainers += len(group.Containers)
+	}
+	
+	logger.Debug("checking for updates",
+		"group_count", len(groups),
+		"container_count", totalContainers,
+	)
+	
 	// Track unique images to avoid duplicate pulls
 	imageDigests := make(map[string]string)
 	var mu sync.Mutex
@@ -168,17 +200,30 @@ func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []mode
 	}
 
 	// Update group-level HasUpdates flag
+	groupsWithUpdates := 0
+	containersWithUpdates := 0
 	for i := range groups {
 		group := &groups[i]
 		group.HasUpdates = false
 		for _, container := range group.Containers {
 			if container.HasUpdate {
 				group.HasUpdates = true
-				break
+				containersWithUpdates++
 			}
+		}
+		if group.HasUpdates {
+			groupsWithUpdates++
 		}
 		group.AllRunning = areAllContainersRunning(group.Containers)
 	}
+
+	duration := time.Since(start)
+	logger.Debug("checked for updates successfully",
+		"groups_with_updates", groupsWithUpdates,
+		"containers_with_updates", containersWithUpdates,
+		"unique_images", len(imageDigests),
+		"duration_ms", duration.Milliseconds(),
+	)
 
 	return nil
 }
