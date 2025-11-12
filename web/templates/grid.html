@@ -1,8 +1,57 @@
 {{define "grid.html"}}
-{{template "layout.html" .}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- htmx -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.5/dist/cdn.min.js"></script>
+    
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <a href="/" class="text-2xl font-bold text-blue-600 hover:text-blue-700">
+                        BleedingEdge
+                    </a>
+                    <span class="ml-3 text-sm text-gray-500">Container Manager</span>
+                </div>
+                <nav class="flex items-center space-x-4">
+                    <a href="/" class="text-gray-600 hover:text-gray-900 text-sm font-medium">
+                        Containers
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {{template "grid-content" .}}
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto py-6 text-center text-sm text-gray-500">
+        <p>BleedingEdge - Keep your containers up to date</p>
+    </footer>
+</body>
+</html>
 {{end}}
 
-{{define "content"}}
+{{define "grid-content"}}
 <div class="mb-6">
     <h1 class="text-3xl font-bold text-gray-900">Containers</h1>
     <p class="mt-2 text-sm text-gray-600">Manage and update your Docker containers</p>
