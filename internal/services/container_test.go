@@ -378,6 +378,11 @@ func TestIsLocalImage(t *testing.T) {
 			imageName: "registry.example.com:5000/myapp:latest",
 			want:      false,
 		},
+		{
+			name:      "raw sha256 digest",
+			imageName: "sha256:ca42d907c22d714ce175bb73258241cf4d8770566a4b53ec07a1d03936e77844",
+			want:      true,
+		},
 	}
 
 	for _, tt := range tests {

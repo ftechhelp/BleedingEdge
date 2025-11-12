@@ -276,6 +276,11 @@ func areAllContainersRunning(containers []models.ContainerInfo) bool {
 // Local images typically don't have a registry prefix (e.g., "myapp:latest")
 // Registry images have formats like "docker.io/library/nginx:latest" or "nginx:latest"
 func isLocalImage(imageName string) bool {
+	// Images referenced by raw digest (sha256:...) cannot be pulled
+	if strings.HasPrefix(imageName, "sha256:") {
+		return true
+	}
+	
 	// Images with no tag or with localhost are local
 	if strings.HasPrefix(imageName, "localhost/") || strings.HasPrefix(imageName, "localhost:") {
 		return true

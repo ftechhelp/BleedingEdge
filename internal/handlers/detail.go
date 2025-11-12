@@ -39,7 +39,8 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(r.Context(), 30*time.Second)
+	// Use a longer timeout for update checks since pulling images can take time
+	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
 	defer cancel()
 
 	h.logger.Info("handling detail page request", "id", id)
