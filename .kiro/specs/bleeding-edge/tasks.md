@@ -32,19 +32,19 @@
     - Handle concurrent image pulls with goroutines
     - _Requirements: 1.7, 1.8, 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 4. Implement update service for container updates
-  - [ ] 4.1 Create update service in internal/services/update.go
+- [x] 4. Implement update service for container updates
+  - [x] 4.1 Create update service in internal/services/update.go
     - Implement ExtractContainerParams function to extract all container configuration
     - Extract ports, volumes, env vars, networks, restart policy, labels, resources, command/entrypoint
     - _Requirements: 6.1_
   
-  - [ ] 4.2 Implement standalone container update logic
+  - [x] 4.2 Implement standalone container update logic
     - Implement UpdateStandaloneContainer function
     - Pull latest image, stop/remove old container, create/start new container with preserved params
     - Handle errors at each step and provide detailed error messages
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
   
-  - [ ] 4.3 Implement compose project update logic
+  - [x] 4.3 Implement compose project update logic
     - Implement UpdateComposeProject function
     - Pull images, execute docker compose down, execute docker compose up -d --build
     - Handle errors at each step and provide detailed error messages
