@@ -76,21 +76,21 @@
     - Add error recovery middleware
     - _Requirements: 7.4_
 
-- [ ] 6. Create HTML templates and UI
-  - [ ] 6.1 Create base layout template in web/templates/layout.html
+- [x] 6. Create HTML templates and UI
+  - [x] 6.1 Create base layout template in web/templates/layout.html
     - Include htmx and Alpine.js from CDN
     - Include Tailwind CSS from CDN for styling
     - Define base HTML structure with header and content area
     - _Requirements: 1.1_
   
-  - [ ] 6.2 Create grid view template in web/templates/grid.html
+  - [x] 6.2 Create grid view template in web/templates/grid.html
     - Display container groups in responsive CSS grid
     - Show status indicators (running/stopped, update available)
     - Show compose project badge with container count
     - Make cards clickable to navigate to detail page
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
   
-  - [ ] 6.3 Create detail view template in web/templates/detail.html
+  - [x] 6.3 Create detail view template in web/templates/detail.html
     - Display container/project name and type
     - Show container list for compose projects with individual status
     - Display prominent update button when updates available
@@ -99,7 +99,7 @@
     - Add htmx attributes for dynamic updates without page reload
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 4.1, 4.2, 7.2, 7.5_
   
-  - [ ] 6.4 Create minimal CSS in web/static/styles.css
+  - [x] 6.4 Create minimal CSS in web/static/styles.css
     - Style status indicators (green for running, gray for stopped, orange for updates)
     - Style action buttons and update button prominence
     - Style error and success message banners
