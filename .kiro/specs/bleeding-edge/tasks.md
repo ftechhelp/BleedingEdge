@@ -17,15 +17,15 @@
     - Define GroupType constants (compose/standalone)
     - _Requirements: 1.2, 1.3_
 
-- [ ] 3. Implement container service for listing and grouping
-  - [ ] 3.1 Create container service in internal/services/container.go
+- [x] 3. Implement container service for listing and grouping
+  - [x] 3.1 Create container service in internal/services/container.go
     - Implement GetContainerGroups function to list and group containers
     - Implement IsComposeProject function to detect compose projects via labels
     - Group containers by com.docker.compose.project label
     - Handle standalone containers as single-container groups
     - _Requirements: 1.1, 1.2, 1.3_
   
-  - [ ] 3.2 Implement update checking functionality
+  - [x] 3.2 Implement update checking functionality
     - Implement CheckUpdates function to pull latest images and compare digests
     - Compare running container image digest with latest pulled image digest
     - Mark containers and groups with update status
