@@ -50,27 +50,27 @@
     - Handle errors at each step and provide detailed error messages
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 5. Implement HTTP handlers and routing
-  - [ ] 5.1 Create home handler in internal/handlers/home.go
+- [x] 5. Implement HTTP handlers and routing
+  - [x] 5.1 Create home handler in internal/handlers/home.go
     - Implement GET / handler to display container grid
     - Call container service to get groups and check updates
     - Pass data to template for rendering
     - _Requirements: 1.1, 1.4, 1.5, 1.6, 1.8_
   
-  - [ ] 5.2 Create detail handler in internal/handlers/detail.go
+  - [x] 5.2 Create detail handler in internal/handlers/detail.go
     - Implement GET /container/:id handler for detail page
     - Display compose project containers or standalone container details
     - Show update status and lifecycle controls
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6_
   
-  - [ ] 5.3 Create operations handler in internal/handlers/operations.go
+  - [x] 5.3 Create operations handler in internal/handlers/operations.go
     - Implement POST /container/:id/update for update operations
     - Implement POST /container/:id/start, stop, restart for lifecycle operations
     - Return htmx-compatible responses with success/error messages
     - Handle errors and display user-friendly messages
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 5.1-5.5, 6.1-6.5, 7.1, 7.2, 7.3, 7.5_
   
-  - [ ] 5.4 Set up HTTP router and middleware in cmd/server/main.go
+  - [x] 5.4 Set up HTTP router and middleware in cmd/server/main.go
     - Configure routes for all handlers
     - Add logging middleware for request/response logging
     - Add error recovery middleware
