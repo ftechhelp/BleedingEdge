@@ -49,8 +49,39 @@
             animation: spin 1s linear infinite;
         }
         
+        .loader-small {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        
+        .step-complete {
+            opacity: 1 !important;
+        }
+        
+        .step-complete .loader-small {
+            display: none;
+        }
+        
+        .step-complete::before {
+            content: '✓';
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            margin-right: 12px;
+            background: rgba(34, 197, 94, 0.9);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            font-weight: bold;
         }
         
         .loading-text {
@@ -68,6 +99,51 @@
     </style>
     
     <script>
+        // Animate progress steps
+        function animateProgressSteps() {
+            const steps = [
+                { id: 'step-1', duration: 2000 },   // Loading container info
+                { id: 'step-2', duration: 30000 },  // Pulling image
+                { id: 'step-3', duration: 3000 },   // Comparing versions
+                { id: 'step-4', duration: 2000 }    // Rendering details
+            ];
+            
+            let currentStep = 0;
+            
+            function activateStep(index) {
+                if (index >= steps.length) return;
+                
+                const step = document.getElementById(steps[index].id);
+                if (!step) return;
+                
+                // Activate current step
+                step.style.opacity = '1';
+                const loader = step.querySelector('.loader-small');
+                if (loader) {
+                    loader.style.display = 'block';
+                }
+                
+                // Complete previous step
+                if (index > 0) {
+                    const prevStep = document.getElementById(steps[index - 1].id);
+                    if (prevStep) {
+                        prevStep.classList.add('step-complete');
+                        const prevLoader = prevStep.querySelector('.loader-small');
+                        if (prevLoader) {
+                            prevLoader.style.display = 'none';
+                        }
+                    }
+                }
+                
+                // Move to next step after duration
+                setTimeout(() => {
+                    activateStep(index + 1);
+                }, steps[index].duration);
+            }
+            
+            activateStep(0);
+        }
+        
         // Hide loading screen when page is fully loaded
         window.addEventListener('load', function() {
             const loadingScreen = document.getElementById('loading-screen');
@@ -80,11 +156,12 @@
         // Show loading screen immediately if checking for updates
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('check_updates') === 'true') {
-            // Keep loading screen visible
+            // Keep loading screen visible and animate steps
             document.addEventListener('DOMContentLoaded', function() {
                 const loadingScreen = document.getElementById('loading-screen');
                 if (loadingScreen) {
                     loadingScreen.classList.remove('hidden');
+                    animateProgressSteps();
                 }
             });
         }
@@ -96,6 +173,28 @@
         <div class="loader"></div>
         <div class="loading-text">Loading container details...</div>
         <div class="text-white text-sm mt-2 opacity-75">Checking for updates</div>
+        
+        <!-- Progress Steps -->
+        <div class="mt-8 max-w-md w-full bg-white bg-opacity-10 rounded-lg p-4 backdrop-blur-sm" id="progress-steps">
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center text-white" id="step-1">
+                    <div class="loader-small mr-3"></div>
+                    <span>Loading container info...</span>
+                </div>
+                <div class="flex items-center text-white opacity-50" id="step-2">
+                    <div class="w-4 h-4 mr-3"></div>
+                    <span>Pulling latest image...</span>
+                </div>
+                <div class="flex items-center text-white opacity-50" id="step-3">
+                    <div class="w-4 h-4 mr-3"></div>
+                    <span>Comparing versions...</span>
+                </div>
+                <div class="flex items-center text-white opacity-50" id="step-4">
+                    <div class="w-4 h-4 mr-3"></div>
+                    <span>Rendering details...</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Header -->
