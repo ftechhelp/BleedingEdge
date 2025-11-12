@@ -14,6 +14,7 @@ A modern, lightweight web UI for managing and updating Docker containers. Keep y
 - 🐳 **Compose Support** - Manages Docker Compose projects as grouped units
 - 🎨 **Modern UI** - Built with Tailwind CSS, htmx, and Alpine.js
 - 🔍 **Smart Detection** - Skips update checks for locally-built images
+- ⏳ **Loading Screen** - Beautiful loading animation while checking for updates
 
 ## Quick Start
 
@@ -82,7 +83,30 @@ services:
       - PORT=3000
       - LOG_LEVEL=debug
       - UPDATE_CHECK_TIMEOUT=10m
+    networks:
+      - private  # Optional: connect to external network
     restart: unless-stopped
+
+networks:
+  private:
+    external: true  # Use existing network
+```
+
+### Local Development
+
+For local development without the external `private` network, create a `docker-compose.override.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  bleeding-edge:
+    networks:
+      - default
+
+networks:
+  default:
+    driver: bridge
 ```
 
 ## How It Works
