@@ -4,10 +4,12 @@ import (
 	"context"
 	"io"
 	"log/slog"
+	"os/exec"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 )
 
@@ -69,7 +71,7 @@ func (c *Client) ListContainers(ctx context.Context) ([]types.Container, error) 
 	start := time.Now()
 	c.logger.Debug("listing containers")
 	
-	containers, err := c.cli.ContainerList(ctx, types.ContainerListOptions{All: true})
+	containers, err := c.cli.ContainerList(ctx, container.ListOptions{All: true})
 	
 	duration := time.Since(start)
 	if err != nil {
@@ -117,7 +119,7 @@ func (c *Client) PullImage(ctx context.Context, imageName string) error {
 	start := time.Now()
 	c.logger.Debug("pulling image", "image", imageName)
 	
-	out, err := c.cli.ImagePull(ctx, imageName, types.ImagePullOptions{})
+	out, err := c.cli.ImagePull(ctx, imageName, image.PullOptions{})
 	if err != nil {
 		duration := time.Since(start)
 		c.logger.Error("failed to pull image",
@@ -187,7 +189,7 @@ func (c *Client) StartContainer(ctx context.Context, id string) error {
 	start := time.Now()
 	c.logger.Debug("starting container", "container_id", id)
 	
-	err := c.cli.ContainerStart(ctx, id, types.ContainerStartOptions{})
+	err := c.cli.ContainerStart(ctx, id, container.StartOptions{})
 	
 	duration := time.Since(start)
 	if err != nil {
@@ -211,7 +213,7 @@ func (c *Client) StopContainer(ctx context.Context, id string) error {
 	start := time.Now()
 	c.logger.Debug("stopping container", "container_id", id)
 	
-	err := c.cli.ContainerStop(ctx, id, nil)
+	err := c.cli.ContainerStop(ctx, id, container.StopOptions{})
 	
 	duration := time.Since(start)
 	if err != nil {
@@ -235,7 +237,7 @@ func (c *Client) RestartContainer(ctx context.Context, id string) error {
 	start := time.Now()
 	c.logger.Debug("restarting container", "container_id", id)
 	
-	err := c.cli.ContainerRestart(ctx, id, nil)
+	err := c.cli.ContainerRestart(ctx, id, container.StopOptions{})
 	
 	duration := time.Since(start)
 	if err != nil {
@@ -259,7 +261,7 @@ func (c *Client) RemoveContainer(ctx context.Context, id string) error {
 	start := time.Now()
 	c.logger.Debug("removing container", "container_id", id)
 	
-	err := c.cli.ContainerRemove(ctx, id, types.ContainerRemoveOptions{Force: true})
+	err := c.cli.ContainerRemove(ctx, id, container.RemoveOptions{Force: true})
 	
 	duration := time.Since(start)
 	if err != nil {
@@ -311,7 +313,36 @@ func (c *Client) CreateContainer(ctx context.Context, config *container.Config, 
 // ExecuteCommand executes a command in a specific working directory
 // This is used for running docker compose commands
 func (c *Client) ExecuteCommand(ctx context.Context, workDir string, command string, args []string) error {
-	// For compose commands, we'll use the exec package
-	// This is a placeholder implementation that will be enhanced when needed
+	start := time.Now()
+	c.logger.Debug("executing command",
+		"command", command,
+		"args", args,
+		"workdir", workDir,
+	)
+	
+	cmd := exec.CommandContext(ctx, command, args...)
+	cmd.Dir = workDir
+	
+	output, err := cmd.CombinedOutput()
+	
+	duration := time.Since(start)
+	if err != nil {
+		c.logger.Error("failed to execute command",
+			"command", command,
+			"args", args,
+			"workdir", workDir,
+			"output", string(output),
+			"error", err,
+			"duration_ms", duration.Milliseconds(),
+		)
+		return err
+	}
+	
+	c.logger.Debug("executed command successfully",
+		"command", command,
+		"args", args,
+		"workdir", workDir,
+		"duration_ms", duration.Milliseconds(),
+	)
 	return nil
 }
