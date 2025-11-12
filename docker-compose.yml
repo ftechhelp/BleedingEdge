@@ -13,4 +13,10 @@ services:
       - LOG_LEVEL=info
       - DOCKER_HOST=unix:///var/run/docker.sock
       - UPDATE_CHECK_TIMEOUT=5m
+    networks:
+      - private
     restart: unless-stopped
+
+networks:
+  private:
+    external: true
