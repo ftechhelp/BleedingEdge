@@ -29,8 +29,7 @@ func NewHomeHandler(client docker.DockerClient, tmpl *template.Template, logger 
 
 // ServeHTTP handles GET / requests
 func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	// Use a longer timeout for update checks since pulling images can take time
-	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	h.logger.Info("handling home page request")
@@ -46,19 +45,28 @@ func (h *HomeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check for updates
-	if err := services.CheckUpdates(ctx, h.client, groups); err != nil {
-		h.logger.Warn("failed to check updates",
-			"error", err,
-			"operation", "check_updates",
-		)
-		// Continue rendering even if update check fails
+	// Skip update checks on initial page load to render quickly
+	// Update checks can be done via a separate endpoint or on detail pages
+	checkUpdates := r.URL.Query().Get("check_updates")
+	if checkUpdates == "true" {
+		// Use a longer timeout for update checks since pulling images can take time
+		updateCtx, updateCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer updateCancel()
+		
+		if err := services.CheckUpdates(updateCtx, h.client, groups); err != nil {
+			h.logger.Warn("failed to check updates",
+				"error", err,
+				"operation", "check_updates",
+			)
+			// Continue rendering even if update check fails
+		}
 	}
 
 	// Prepare template data
 	data := map[string]interface{}{
-		"Groups": groups,
-		"Title":  "BleedingEdge - Container Manager",
+		"Groups":       groups,
+		"Title":        "BleedingEdge - Container Manager",
+		"CheckUpdates": checkUpdates != "true", // Show check updates button if not already checked
 	}
 
 	// Render template

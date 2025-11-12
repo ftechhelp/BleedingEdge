@@ -39,8 +39,7 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use a longer timeout for update checks since pulling images can take time
-	ctx, cancel := context.WithTimeout(r.Context(), 2*time.Minute)
+	ctx, cancel := context.WithTimeout(r.Context(), 10*time.Second)
 	defer cancel()
 
 	h.logger.Info("handling detail page request", "id", id)
@@ -57,14 +56,21 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check for updates
-	if err := services.CheckUpdates(ctx, h.client, groups); err != nil {
-		h.logger.Warn("failed to check updates",
-			"error", err,
-			"operation", "check_updates",
-			"container_id", id,
-		)
-		// Continue rendering even if update check fails
+	// Check for updates only if requested
+	checkUpdates := r.URL.Query().Get("check_updates")
+	if checkUpdates == "true" {
+		// Use a longer timeout for update checks since pulling images can take time
+		updateCtx, updateCancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer updateCancel()
+		
+		if err := services.CheckUpdates(updateCtx, h.client, groups); err != nil {
+			h.logger.Warn("failed to check updates",
+				"error", err,
+				"operation", "check_updates",
+				"container_id", id,
+			)
+			// Continue rendering even if update check fails
+		}
 	}
 
 	// Find the requested group
@@ -87,8 +93,9 @@ func (h *DetailHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	// Prepare template data
 	data := map[string]interface{}{
-		"Group": group,
-		"Title": "BleedingEdge - " + group.Name,
+		"Group":        group,
+		"Title":        "BleedingEdge - " + group.Name,
+		"CheckUpdates": checkUpdates != "true",
 	}
 
 	// Render template
