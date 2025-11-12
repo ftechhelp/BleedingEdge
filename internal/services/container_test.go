@@ -312,7 +312,80 @@ func TestCheckUpdatesError(t *testing.T) {
 	}
 
 	err := CheckUpdates(context.Background(), mockClient, groups)
-	if err == nil {
-		t.Error("expected error when pull fails, got nil")
+	if err != nil {
+		t.Errorf("expected no error when pull fails (should be handled gracefully), got: %v", err)
+	}
+	
+	// Verify that the container is marked as having no update when pull fails
+	if groups[0].Containers[0].HasUpdate {
+		t.Error("expected HasUpdate to be false when pull fails")
+	}
+}
+
+func TestIsLocalImage(t *testing.T) {
+	tests := []struct {
+		name      string
+		imageName string
+		want      bool
+	}{
+		{
+			name:      "local compose image with hyphen",
+			imageName: "bleedingedge-bleeding-edge",
+			want:      true,
+		},
+		{
+			name:      "local compose image with underscore",
+			imageName: "subset_tvdb_api",
+			want:      true,
+		},
+		{
+			name:      "localhost image",
+			imageName: "localhost/myapp:latest",
+			want:      true,
+		},
+		{
+			name:      "localhost with port",
+			imageName: "localhost:5000/myapp:latest",
+			want:      true,
+		},
+		{
+			name:      "docker hub official image",
+			imageName: "nginx:latest",
+			want:      false,
+		},
+		{
+			name:      "docker hub user image",
+			imageName: "user/nginx:latest",
+			want:      false,
+		},
+		{
+			name:      "gcr.io registry",
+			imageName: "gcr.io/project/image:tag",
+			want:      false,
+		},
+		{
+			name:      "docker.io registry",
+			imageName: "docker.io/library/nginx:latest",
+			want:      false,
+		},
+		{
+			name:      "quay.io registry",
+			imageName: "quay.io/repo/image:latest",
+			want:      false,
+		},
+		{
+			name:      "private registry with port",
+			imageName: "registry.example.com:5000/myapp:latest",
+			want:      false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isLocalImage(tt.imageName)
+			if got != tt.want {
+				t.Errorf("isLocalImage(%q) = %v, want %v", tt.imageName, got, tt.want)
+			}
+		})
 	}
 }

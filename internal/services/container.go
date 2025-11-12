@@ -128,7 +128,6 @@ func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []mode
 	imageDigests := make(map[string]string)
 	var mu sync.Mutex
 	var wg sync.WaitGroup
-	errChan := make(chan error, len(groups)*10) // Buffer for potential errors
 
 	// Process all containers across all groups
 	for i := range groups {
@@ -143,6 +142,18 @@ func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []mode
 
 				imageName := c.Image
 				
+				// Skip update check for locally built images (no registry prefix)
+				if isLocalImage(imageName) {
+					logger.Debug("skipping update check for local image",
+						"container", c.Name,
+						"image", imageName,
+					)
+					mu.Lock()
+					c.HasUpdate = false
+					mu.Unlock()
+					return
+				}
+				
 				// Check if we already have the latest digest for this image
 				mu.Lock()
 				latestDigest, exists := imageDigests[imageName]
@@ -151,14 +162,28 @@ func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []mode
 				if !exists {
 					// Pull the latest image
 					if err := client.PullImage(ctx, imageName); err != nil {
-						errChan <- fmt.Errorf("failed to pull image %s: %w", imageName, err)
+						logger.Warn("failed to pull image, skipping update check",
+							"container", c.Name,
+							"image", imageName,
+							"error", err,
+						)
+						mu.Lock()
+						c.HasUpdate = false
+						mu.Unlock()
 						return
 					}
 
 					// Get the latest digest
 					digest, err := client.GetImageDigest(ctx, imageName)
 					if err != nil {
-						errChan <- fmt.Errorf("failed to get digest for image %s: %w", imageName, err)
+						logger.Warn("failed to get digest for image, skipping update check",
+							"container", c.Name,
+							"image", imageName,
+							"error", err,
+						)
+						mu.Lock()
+						c.HasUpdate = false
+						mu.Unlock()
 						return
 					}
 
@@ -171,7 +196,14 @@ func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []mode
 				// Get the current container's image digest
 				currentDigest, err := client.GetImageDigest(ctx, c.Image)
 				if err != nil {
-					errChan <- fmt.Errorf("failed to get current digest for container %s: %w", c.Name, err)
+					logger.Warn("failed to get current digest for container, skipping update check",
+						"container", c.Name,
+						"image", imageName,
+						"error", err,
+					)
+					mu.Lock()
+					c.HasUpdate = false
+					mu.Unlock()
 					return
 				}
 
@@ -187,17 +219,6 @@ func CheckUpdates(ctx context.Context, client docker.DockerClient, groups []mode
 
 	// Wait for all goroutines to complete
 	wg.Wait()
-	close(errChan)
-
-	// Check for errors
-	var errs []error
-	for err := range errChan {
-		errs = append(errs, err)
-	}
-	if len(errs) > 0 {
-		// Return the first error (could be enhanced to return all errors)
-		return errs[0]
-	}
 
 	// Update group-level HasUpdates flag
 	groupsWithUpdates := 0
@@ -249,4 +270,37 @@ func areAllContainersRunning(containers []models.ContainerInfo) bool {
 		}
 	}
 	return true
+}
+
+// isLocalImage checks if an image is locally built (not from a registry)
+// Local images typically don't have a registry prefix (e.g., "myapp:latest")
+// Registry images have formats like "docker.io/library/nginx:latest" or "nginx:latest"
+func isLocalImage(imageName string) bool {
+	// Images with no tag or with localhost are local
+	if strings.HasPrefix(imageName, "localhost/") || strings.HasPrefix(imageName, "localhost:") {
+		return true
+	}
+	
+	// Check if image has a registry domain (contains a dot before the first slash)
+	// Examples: docker.io/nginx, gcr.io/project/image, quay.io/repo/image
+	parts := strings.SplitN(imageName, "/", 2)
+	if len(parts) > 1 {
+		// If the first part contains a dot or colon, it's likely a registry
+		if strings.Contains(parts[0], ".") || strings.Contains(parts[0], ":") {
+			return false
+		}
+	}
+	
+	// Check for official Docker Hub images (single name like "nginx", "postgres")
+	// These are pullable from Docker Hub
+	imageParts := strings.Split(imageName, ":")
+	baseName := imageParts[0]
+	
+	// If it contains a hyphen or underscore and no slash, it's likely a local compose image
+	// Examples: "myproject-web", "subset-tvdb-api", "bleedingedge-bleeding-edge"
+	if !strings.Contains(baseName, "/") && (strings.Contains(baseName, "-") || strings.Contains(baseName, "_")) {
+		return true
+	}
+	
+	return false
 }
